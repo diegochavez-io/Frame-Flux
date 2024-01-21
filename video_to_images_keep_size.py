@@ -5,8 +5,8 @@ import random
 import zipfile
 
 # Parameters
-source_file = r"G:\My Drive\algo-film\delenda_algo_film_shoot_0822\algo_film_del_0822__02034565.mov"  # Single video file path
-image_count = 15  # Number of images to extract per video
+source_file = "/Users/agi/Dropbox/Delenda/Catalyst/Live-Action/A069_09032309_C009.mov"  # Single video file path
+image_count = 35  # Number of images to extract per video
 zip_output = False  # Set to True if you want to zip the output folder
 
 # Get the folder of the source_file

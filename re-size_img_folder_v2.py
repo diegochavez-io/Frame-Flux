@@ -2,12 +2,12 @@ import os
 from PIL import Image
 
 # Path to the source folder
-source_folder = r"H:\Algo-Film\Delenda_Shoot_230818\Photos\Square"
+source_folder = "/Users/agi/Dropbox/Delenda/Catalyst/Midjourney/Processed/3452"
 output_folder = os.path.join(source_folder, "processed")
 os.makedirs(output_folder, exist_ok=True)
 
 # Desired output size
-output_size = (1024, 1024)
+output_size = (512, 512)
 
 # Iterate over all files in the source folder
 for filename in os.listdir(source_folder):

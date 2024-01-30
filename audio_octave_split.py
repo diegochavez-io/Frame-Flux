@@ -1,62 +1,41 @@
-# pip install pydub in terminal
-
 import os
 from pydub import AudioSegment
 
-# we'll assume you know the BPM and it's 120
 bpm = 30
-
-# calculate the length of a bar (4 beats) in milliseconds
 bar_length = (4 * 60 / bpm) * 1000
+fade_duration = 25
 
-# the fade duration in milliseconds
-fade_duration = 25  # 50ms, adjust as needed
-
-# directory where you have your wav files
-dir_path = r"D:\Dropbox\_MAKE\Tidalcycles\_Samples\tidalclub\harp_harm_s"
-# replace this with your actual path
-
-# list all files in the directory
+dir_path = "/Users/agi/Desktop/samples"
 files = os.listdir(dir_path)
 
-# process each file
+print("Files in directory:", files)
+
 for filename in files:
-    # only process .wav files
-    if filename.endswith(".wav"):
-        # full path to the file
+    if filename.endswith((".wav", ".aif")):
         file_path = os.path.join(dir_path, filename)
+        print("Processing file:", filename)
 
-        # load the song
-        song = AudioSegment.from_file(file_path)
+        try:
+            song = AudioSegment.from_file(file_path, format=filename.split('.')[-1])
 
-        # extract filename without extension
-        filename_no_ext = filename.split(".")[0]
+            filename_no_ext = os.path.splitext(filename)[0]
+            num_bars = int(len(song) / bar_length) + 1
 
-        # number of bars in the song
-        num_bars = int(len(song) / bar_length) + 1  # Added 1 to include the final bar
+            for i in range(1, num_bars + 1):
+                start_time = (i - 1) * bar_length
+                end_time = start_time + bar_length
+                bar = song[start_time:end_time]
 
-        # chop up the song, add fade in and out, and export each bar
-        for i in range(1, num_bars + 1):
-            start_time = (i - 1) * bar_length
-            end_time = start_time + bar_length
-            bar = song[start_time:end_time]
+                bar = bar.fade_in(fade_duration).fade_out(fade_duration)
 
-            # add fade in and out
-            bar = bar.fade_in(fade_duration).fade_out(fade_duration)
+                folder = os.path.join(dir_path, f"{filename_no_ext}_{'1' if i <= 12 else '2'}")
+                if not os.path.exists(folder):
+                    os.makedirs(folder)
 
-            # determine which folder this bar should go in
-            if i <= 12:
-                folder = os.path.join(dir_path, f"{filename_no_ext}_1")
-            else:
-                folder = os.path.join(dir_path, f"{filename_no_ext}_2")
+                output_filename = f"{filename_no_ext}_{str(i).zfill(2)}.wav"
+                output_path = os.path.join(folder, output_filename)
 
-            # create the folder if it doesn't exist
-            if not os.path.exists(folder):
-                os.makedirs(folder)
-
-            # save the bar to the appropriate folder
-            output_filename = f"{filename_no_ext}_{str(i).zfill(2)}.wav"
-            output_path = os.path.join(folder, output_filename)
-
-            print("Saving to:", output_path)
-            bar.export(output_path, format="wav")
+                print("Saving to:", output_path)
+                bar.export(output_path, format="wav")
+        except Exception as e:
+            print(f"Error processing file {filename}: {e}")

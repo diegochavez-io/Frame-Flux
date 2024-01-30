@@ -1,84 +1,65 @@
 import cv2
 import os
-import numpy as np
 import random
 import zipfile
 
 # Parameters
-source_file = r"D:\feather_TD\feather_TDMovieOut.0_1.mov"# Single video file path
-image_count = 100  # Number of images to extract per video
-output_size = 512  # Desired output size of images
-zip_output = False  # Set to True if you want to zip the output folder
+source_file = "/Users/agi/Desktop/dlnda_cyr_00054689654_00026.mov"  # Path to the video file
+image_count = 50  # Number of images to extract
+output_size = 512  # Desired size of the output images
+zip_output = False  # Set True to zip the output folder
 
-# Get the folder of the source_file
-source_folder = os.path.dirname(source_file)
-# Use the same folder for the output_folder
-output_folder = source_folder
+# Output folder
+output_folder = "/Users/agi/Desktop/Processed_Images"  # Output folder path
 
 def crop_center(img, cropx, cropy):
     y, x, _ = img.shape
-    startx = x//2 - (cropx//2)
-    starty = y//2 - (cropy//2)
+    startx = x // 2 - (cropx // 2)
+    starty = y // 2 - (cropy // 2)
     return img[starty:starty+cropy, startx:startx+cropx]
 
-# Function to extract frames from a video file and save them as images
 def extract_frames(video_path, image_count, output_size):
     vidcap = cv2.VideoCapture(video_path)
-    vidcap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('C', 'Y', 'U', 'V'))  # Set the encoding
     total_frames = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    if image_count > total_frames:
-        print(f"Number of frames to extract is greater than the total frames in the video. Extracting {total_frames} frames instead.")
-        image_count = total_frames
+    # Adjust image_count if it's more than the total frames
+    image_count = min(image_count, total_frames)
 
-    if image_count == 0:
-        print("No frames to extract.")
-        return
+    # Randomly select unique frames with a minimum gap
+    min_gap = total_frames // image_count
+    frames_to_extract = sorted(random.sample(range(total_frames), image_count))
+    frames_to_extract = [frame + i * min_gap for i, frame in enumerate(frames_to_extract)]
+    frames_to_extract = [min(frame, total_frames - 1) for frame in frames_to_extract]  # Adjust if exceeds total frames
 
-    # Calculate a minimum distance between the frames
-    min_distance = total_frames // image_count
-
-    # Generate a list of frame numbers ensuring the minimum distance
-    frames_to_extract = sorted([random.randint(i * min_distance, (i + 1) * min_distance - 1) for i in range(image_count)])
-
-    # Create a subfolder in the output_folder with the same name as the video file
+    # Prepare the output subfolder
     output_subfolder = os.path.join(output_folder, os.path.splitext(os.path.basename(video_path))[0])
     os.makedirs(output_subfolder, exist_ok=True)
 
-    success, image = vidcap.read()
-    count = 0
-    while success:
-        if count in frames_to_extract:
-            # Crop the image to a square (this will take the center part of the image)
-            cropped_image = crop_center(image, output_size, output_size)
-
-            # Save the image
-            cv2.imwrite(os.path.join(output_subfolder, f"frame{count}.jpg"), cropped_image)
-            frames_to_extract.remove(count)
+    for frame_index in frames_to_extract:
+        vidcap.set(cv2.CAP_PROP_POS_FRAMES, frame_index)
         success, image = vidcap.read()
-        count += 1
+        if success:
+            cropped_image = crop_center(image, output_size, output_size)
+            cv2.imwrite(os.path.join(output_subfolder, f"frame{frame_index}.jpg"), cropped_image)
 
+    vidcap.release()
     return output_subfolder
 
-# Function to zip the output folder
-def zip_folder(output_folder):
-    zipf = zipfile.ZipFile(f"{output_folder}.zip", 'w', zipfile.ZIP_DEFLATED)
-    for root, dirs, files in os.walk(output_folder):
+def zip_folder(folder):
+    zipf = zipfile.ZipFile(f"{folder}.zip", 'w', zipfile.ZIP_DEFLATED)
+    for root, dirs, files in os.walk(folder):
         for file in files:
-            zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), os.path.join(output_folder, '..')))
+            zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), os.path.join(folder, '..')))
     zipf.close()
 
-# Main function to process the videos
 def main():
-    # Process a single video file
-    video_path = source_file
-    print(f"Extracting frames from {video_path}...")
-    output_subfolder = extract_frames(video_path, image_count, output_size)
+    print(f"Extracting frames from {source_file}...")
+    output_subfolder = extract_frames(source_file, image_count, output_size)
     
-    # Zip the output folder if zip_output is True
     if zip_output:
+        print(f"Zipping output folder {output_subfolder}...")
         zip_folder(output_subfolder)
+    print("Processing complete.")
 
 if __name__ == "__main__":
     main()
-    

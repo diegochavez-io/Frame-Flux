@@ -4,18 +4,18 @@ import random
 
 # Configurations
 EXTRACTION_FRAME_RATE = 25  # Desired number of frames to extract from the entire video
-input_folder = r"D:\_DEL_TEMP\Touch_HAP"
+input_folder = "/Users/agi/Desktop/runpod_mov_2"
+output_folder = "//Users/agi/Desktop/runpod_mov_2/extracted_frames"  # Common folder for all frames
 
 random.seed(10)
+
+# Create the common output folder if it doesn't exist
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
 
 def process_video(input_file):
     # Extract the base name of the video (without extension)
     video_name = os.path.splitext(os.path.basename(input_file))[0]
-
-    # Create the output folder based on video's name + "_frames"
-    output_dir = os.path.join(os.path.dirname(input_file), video_name + "_frames")
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
 
     # Extract frames from the video
     vidcap = cv2.VideoCapture(input_file)
@@ -52,7 +52,8 @@ def process_video(input_file):
 
     # Save the frames as .png files in the output folder
     for i, frame in enumerate(frames):
-        output_path = os.path.join(output_dir, (str(i).zfill(9) + ".png"))
+        frame_filename = f"{video_name}_frame_{str(i).zfill(9)}.png"
+        output_path = os.path.join(output_folder, frame_filename)
         cv2.imwrite(output_path, frame)
         print(f"Saving frame {i+1} to {output_path}")
 

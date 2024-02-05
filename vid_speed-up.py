@@ -2,13 +2,20 @@ import os
 import subprocess
 
 # Parameters for easy configuration
-input_video_path = "/Users/agi/Dropbox/Delenda/Catalyst/Runway/3956478850_prob4.mp4"
-output_video_path = "/Users/agi/Dropbox/Delenda/Catalyst/Runway/3956478850___x2.mp4"
-speed_factor = 2  # Speed up by a factor of 2 (e.g., from 13 seconds to 6.5 seconds)
+input_video_file = "/Users/agi/Dropbox/Delenda/Catalyst/Runway/2638431982.mp4"
+speed_factor = 2  # Speed up by a factor of 2
 
-def speed_up_video(input_path, output_path, speed_factor):
+def speed_up_video(input_filename, speed_factor):
+    input_dir = "/Users/agi/Dropbox/Delenda/Catalyst/Runway/"
+    output_filename = f"{os.path.splitext(os.path.basename(input_filename))[0]}_x{speed_factor}.mp4"  # Fixed output_filename
+    input_path = os.path.join(input_dir, input_filename)
+    output_path = os.path.join(input_dir, output_filename)
+
     # Get the original frame rate of the input video
     frame_rate = get_frame_rate(input_path)
+
+    if frame_rate == 0:
+        return  # Exit if unable to get the frame rate
 
     # Calculate the new frame rate to maintain all frames
     new_frame_rate = frame_rate * speed_factor
@@ -32,11 +39,11 @@ def get_frame_rate(input_path):
     result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     
     try:
-        frame_rate = eval(result.stdout)
+        frame_rate = eval(result.stdout.strip())
         return frame_rate
     except (ValueError, SyntaxError):
         print(f"Error getting frame rate. STDOUT: {result.stdout}, STDERR: {result.stderr}")
         return 0
 
 # Main execution
-speed_up_video(input_video_path, output_video_path, speed_factor)
+speed_up_video(input_video_file, speed_factor)

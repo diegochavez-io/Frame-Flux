@@ -3,9 +3,9 @@ import os
 import random
 
 # Configurations
-EXTRACTION_FRAME_RATE = 2
-input_folder = "/Volumes/Apus/Catalyst/Runway/0123"
-output_folder = "/Volumes/Apus/Catalyst/Runway/extracted_frames"
+EXTRACTION_FRAME_RATE = 1
+input_folder = "/Users/agi/Dropbox/Runway/BW_Cell"
+output_folder = "/Users/agi/Dropbox/Runway/BW_Cell/BW_Cell_extracted_frames"
 
 random.seed(10)
 

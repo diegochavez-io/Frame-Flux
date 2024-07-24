@@ -5,14 +5,17 @@ import zipfile
 import time
 
 # Parameters
-source_folder = r"C:\Users\diego\Videos\Works of director Chris Cunningham"  # Folder containing all the video files
-image_count = 50  # Number of images to extract per video
+source_folder = "/Volumes/A072/botany/watercolor"  # Folder containing all the video files
+image_count = 4  # Number of images to extract per video
 zip_output = False  # Set to True if you want to zip the output folder
 
-# Create a single folder for all extracted frames
-output_folder = "frames"
-os.makedirs(output_folder, exist_ok=True)
+# Create the output folder named after the source folder and the number of frames
+base_folder_name = os.path.basename(os.path.normpath(source_folder))
+output_folder = f"{base_folder_name}_{image_count}_frames"
+output_path = os.path.join(os.path.dirname(source_folder), output_folder)
+os.makedirs(output_path, exist_ok=True)
 
+print(f"Output frames will be saved to: {output_path}")
 
 # Function to extract frames from a video file and save them as images
 def extract_frames(video_path, image_count):
@@ -48,11 +51,10 @@ def extract_frames(video_path, image_count):
             video_name_prefix = os.path.splitext(os.path.basename(video_path))[0][:15]
             timestamp = int(time.time() * 1000)  # Get current timestamp in milliseconds
             frame_filename = f"{video_name_prefix}_frame{count}_{timestamp}.jpg"
-            cv2.imwrite(os.path.join(output_folder, frame_filename), image)
+            cv2.imwrite(os.path.join(output_path, frame_filename), image)
             frames_to_extract.remove(count)
         success, image = vidcap.read()
         count += 1
-
 
 # Function to zip the output folder
 def zip_folder(output_folder):
@@ -67,7 +69,6 @@ def zip_folder(output_folder):
             )
     zipf.close()
 
-
 # Main function to process the videos
 def main():
     for video_file in os.listdir(source_folder):
@@ -80,8 +81,7 @@ def main():
 
     # Zip the output folder if zip_output is True
     if zip_output:
-        zip_folder(output_folder)
-
+        zip_folder(output_path)
 
 if __name__ == "__main__":
     main()

@@ -5,7 +5,7 @@ bpm = 30
 bar_length = (4 * 60 / bpm) * 1000
 fade_duration = 25
 
-dir_path = "/Users/agi/Desktop/samples"
+dir_path = "/Users/agi/Desktop/BLNDR_"
 files = os.listdir(dir_path)
 
 print("Files in directory:", files)

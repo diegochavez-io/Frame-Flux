@@ -8,10 +8,10 @@ from moviepy.editor import *
 file_patterns = ['%04d.jpg', '%04d.png', '%04d.dpx']
 
 # Source folder
-source_folder = r"G:\My Drive\algo-film\delenda_algo_film_shoot_0822\random-frames_01"
+source_folder = "/Volumes/Apus/Catalyst/Runway/extracted_frames"
 
 # Output folder
-output_folder = r"G:\My Drive\algo-film\delenda_algo_film_shoot_0822"
+output_folder = "/Volumes/Apus/Catalyst/Runway"
 
 
 # Check if source_folder exists

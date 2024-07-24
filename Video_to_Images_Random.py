@@ -4,8 +4,8 @@ import random
 import zipfile
 
 # Parameters
-source_file = r"C:\Users\diego\Videos\Works of director Chris Cunningham\Vts 01 3.m4v"
-image_count = 200  # Number of images to extract per video
+source_file = "/Users/agi/Dropbox/_MAKE/_IG/Gen-3/_Gen-3_Alpha_H.mp4"
+image_count = 35  # Number of images to extract per video
 zip_output = False  # Set to True if you want to zip the output folder
 
 # Get the folder of the source_file and append _frames

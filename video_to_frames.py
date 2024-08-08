@@ -1,10 +1,10 @@
 import cv2
 import os
 
-VIDEO_SOURCE_FILE = "/Users/agi/Dropbox/Runway/Gen-1/Gen-1 koi pix2pix_ cc_1,style_consistency 4,style_weight 105,seed 350365255,frame_consistency 1,upscale false,foreground_only false,background_only false_1_aion1_prob4.mov"
+VIDEO_SOURCE_FILE = "/Users/agi/Dropbox/_MAKE/_IG/Gen-3/_Gen-3_Alpha_H.mp4"
 EXTRACTION_FRAME_RATE = 24
 
-output_folder = "/Users/agi/Dropbox/Runway/_Frame_Sequences"
+output_folder = "/Users/agi/Dropbox/Runway/Gen-3/_frames"
 source_file_name = os.path.basename(VIDEO_SOURCE_FILE)
 source_file_folder = os.path.splitext(source_file_name)[0]
 

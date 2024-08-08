@@ -123,13 +123,13 @@ def video_to_mp4(input_video_path, output_video_path, fps=None, resize=None, bla
 
 # Example usage
 video_to_mp4(
-    input_video_path="/Users/agi/Dropbox/ComfyUI_Output/2024-07-19/0713_9843576_00001.mov",
-    output_video_path="/Users/agi/Dropbox/Portfolio/VIdeo/0713_50_5.mp4",
+    input_video_path="/Users/agi/Desktop/_LIMBO/AD_00006_5_seconds_prob4_ahq12.mp4",
+    output_video_path="/Users/agi/Desktop/_LIMBO/AD_00006_5_seconds_prob4_ahq12_dither.mp4",
     fps=12,
     # resize=(640, 480),  # Example resize value
     black_and_white=True,
     dither=True,
-    dither_amount=50,
+    dither_amount=25,
     add_noise_amount=0,
     add_scan_lines_effect=True,
     scan_line_thickness=1,
@@ -137,5 +137,5 @@ video_to_mp4(
     horizontal_lines=True,
     vertical_lines=False,
     full_video=False,  # Process only a portion of the video
-    duration=5  # Duration in seconds to process
+    # duration=5  # Duration in seconds to process
 )

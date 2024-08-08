@@ -122,18 +122,18 @@ def video_to_mp4(input_video_path, output_video_path, fps=None, resize=None, bla
 
 # Example usage
 video_to_mp4(
-    input_video_path="/Users/agi/Dropbox/Runway/Gen-3/Gen-3 Alpha 1560884746, iridescent, chromati.mp4",
-    output_video_path="/Users/agi/Dropbox/Portfolio/VIdeo/Gen-3 Alpha 1560884746_.mp4",
+    input_video_path="/Users/agi/Desktop/_LIMBO/AD_00006_5_seconds_prob4_ahq12.mp4",
+    output_video_path="/Users/agi/Desktop/_LIMBO/AD_00006_5_seconds_prob4_ahq12_dither_4.mp4",
     fps=12,
     # resize=(640, 480),  # Example resize value
     black_and_white=True,
     dither=True,
-    dither_amount=40,
-    add_noise_amount=5,
+    dither_amount=15,
+    add_noise_amount=0,
     add_scan_lines_effect=True,
     scan_line_thickness=1,
     scan_line_opacity=0.1,
-    horizontal_lines=True,
+    horizontal_lines=False,
     vertical_lines=False,
     full_video=False,  # Process only a portion of the video
     # duration=5  # Duration in seconds to process

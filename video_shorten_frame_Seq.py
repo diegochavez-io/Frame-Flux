@@ -1,82 +1,128 @@
-from moviepy.editor import VideoFileClip, concatenate_videoclips, vfx
-import math
 import os
 import random
+import time
+from moviepy.editor import VideoFileClip, concatenate_videoclips, CompositeVideoClip, vfx
+from scipy.signal import find_peaks
+import numpy as np
 
-def condense_video(input_video_path, output_dir, target_duration, fps=30, sequence_length=5, random_factor=0, speed_factor=1):
-    """
-    Condense a video into a shorter version by extracting frames and stitching them together.
+def detect_scenes(video, min_scene_length=15):
+    frame_diffs = []
+    prev_frame = None
+    for frame in video.iter_frames(fps=video.fps):
+        if prev_frame is not None:
+            diff = np.mean(np.abs(frame.astype(float) - prev_frame.astype(float)))
+            frame_diffs.append(diff)
+        prev_frame = frame
 
-    Args:
-        input_video_path (str): Path to the input video file.
-        output_dir (str): Directory where the output video file will be saved.
-        target_duration (int): Target duration of the condensed video in seconds.
-        fps (int): Frames per second for the output video (default: 30).
-        sequence_length (int): Number of consecutive frames to include per sequence (default: 5).
-        random_factor (int): Percentage of randomness to apply to frame selection (0-100).
-        speed_factor (int): Speed factor to apply to the final video (e.g., 2 for 2x speed).
+    if len(frame_diffs) > 0:
+        peaks, _ = find_peaks(frame_diffs, height=np.mean(frame_diffs) + np.std(frame_diffs), distance=min_scene_length)
+        scene_changes = list(peaks)
+    else:
+        scene_changes = []
+    
+    return [change / video.fps for change in scene_changes]  # Convert to seconds
 
-    Returns:
-        None
-    """
-    # Load the input video
-    video = VideoFileClip(input_video_path)
+def select_clips(video, scene_changes, target_duration, grain_size_frames, overlap_frames, random_factor):
+    clips = []
+    video_duration = video.duration
+    total_frames = int(video.fps * video_duration)
+    target_frames = int(target_duration * video.fps)
+    
+    effective_grain_size = grain_size_frames - overlap_frames
+    num_grains = target_frames // effective_grain_size if effective_grain_size > 0 else target_frames
 
-    # Get the input video duration
-    input_duration = video.duration
-    print(f"Input video duration: {input_duration} seconds")
+    for i in range(num_grains):
+        # Calculate the ideal start frame to cover the whole video
+        ideal_start_frame = int(i * total_frames / num_grains)
+        
+        # Find the nearest scene change
+        if scene_changes:
+            nearest_scene = min(scene_changes, key=lambda x: abs(x * video.fps - ideal_start_frame))
+            start_frame = int(nearest_scene * video.fps)
+        else:
+            start_frame = ideal_start_frame
+        
+        # Apply random factor
+        max_offset = int(random_factor * total_frames / 100)
+        random_offset = random.randint(-max_offset, max_offset)
+        start_frame = max(0, min(total_frames - grain_size_frames, start_frame + random_offset))
+        
+        start_time = start_frame / video.fps
+        end_time = (start_frame + grain_size_frames) / video.fps
+        clip = video.subclip(start_time, min(end_time, video_duration))
+        clips.append(clip)
+    
+    return clips
 
-    # Calculate the number of segments
-    num_segments = target_duration * fps // sequence_length
-    segment_interval = input_duration / num_segments
-    print(f"Number of segments: {num_segments}, Interval between segments: {segment_interval} seconds")
+def apply_crossfade(clip1, clip2, overlap_frames):
+    if overlap_frames == 0:
+        return concatenate_videoclips([clip1, clip2])
+    overlap_duration = overlap_frames / clip1.fps
+    return CompositeVideoClip([clip1, clip2.set_start(clip1.duration - overlap_duration).crossfadein(overlap_duration)])
 
-    # Create a list to store the segments
-    segments = []
+def condense_video(input_video_path, output_dir, target_duration, output_fps=60, grain_size_frames=3, overlap_frames=0, random_factor=0, speed_factor=1):
+    os.makedirs(output_dir, exist_ok=True)
 
-    # Extract segments from the input video
-    for i in range(num_segments):
-        start_time = i * segment_interval
-        if random_factor > 0:
-            # Apply randomness to start time
-            random_adjustment = random.uniform(-random_factor/100 * segment_interval, random_factor/100 * segment_interval)
-            start_time = max(0, min(input_duration - (sequence_length / fps), start_time + random_adjustment))
-        segment = video.subclip(start_time, start_time + (sequence_length / fps))
-        segments.append(segment)
+    try:
+        video = VideoFileClip(input_video_path)
+        input_duration = video.duration
+        print(f"Input video duration: {input_duration} seconds")
+        print(f"Input video FPS: {video.fps}")
 
-    # Concatenate the segments
-    condensed_video = concatenate_videoclips(segments)
+        scene_changes = detect_scenes(video)
+        print(f"Detected {len(scene_changes)} scene changes")
 
-    # Apply speed factor
-    if speed_factor != 1:
-        condensed_video = condensed_video.fx(vfx.speedx, speed_factor)
+        clips = select_clips(video, scene_changes, target_duration, grain_size_frames, overlap_frames, random_factor)
+        print(f"Selected {len(clips)} clips")
 
-    # Extract the base name of the input video file without extension
-    input_video_name = os.path.splitext(os.path.basename(input_video_path))[0]
+        # Apply crossfades between clips
+        if overlap_frames > 0:
+            crossfaded_clips = [clips[0]]
+            for i in range(1, len(clips)):
+                crossfaded_clip = apply_crossfade(crossfaded_clips[-1], clips[i], overlap_frames)
+                crossfaded_clips.append(crossfaded_clip)
+            condensed_video = concatenate_videoclips(crossfaded_clips, method="compose")
+        else:
+            condensed_video = concatenate_videoclips(clips, method="compose")
 
-    # Create the output file name including the input video name and parameters
-    output_video_filename = f"{input_video_name}_condensed"
-    if speed_factor != 1:
-        output_video_filename += f"_{speed_factor}x"
-    if random_factor > 0:
-        output_video_filename += f"_random_{random_factor}"
-    output_video_filename += ".mp4"
+        # Apply speed factor
+        if speed_factor != 1:
+            condensed_video = condensed_video.fx(vfx.speedx, speed_factor)
 
-    # Create the output file path
-    output_video_file_path = os.path.join(output_dir, output_video_filename)
+        # Ensure the final duration matches the target duration
+        if condensed_video.duration != target_duration:
+            condensed_video = condensed_video.set_duration(target_duration)
 
-    # Write the condensed video to the output file
-    condensed_video.write_videofile(output_video_file_path, codec='libx264', fps=fps)
+        # Set the output FPS
+        if output_fps != video.fps:
+            condensed_video = condensed_video.set_fps(output_fps)
 
-    print(f"Video condensed and saved to {output_video_file_path}")
+        output_video_filename = f"condensed_video_{int(time.time())}.mp4"
+        output_video_file_path = os.path.join(output_dir, output_video_filename)
+
+        condensed_video.write_videofile(output_video_file_path, codec='libx264', fps=output_fps, preset='slow', bitrate='12000k')
+        
+        print(f"Video condensed and saved to {output_video_file_path}")
+        print(f"Output video duration: {condensed_video.duration} seconds")
+        print(f"Output video FPS: {condensed_video.fps}")
+    
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+    
+    finally:
+        if 'video' in locals():
+            video.close()
+        if 'condensed_video' in locals():
+            condensed_video.close()
 
 # User inputs
-input_video_path = "/Volumes/ML 5TB/Delenda_Live_Visuals/random_clip_2_198ca0_warp_runpod_8_resolve00087779 copy.mp4"
-output_dir = "/Users/agi/Dropbox/Portfolio/Delenda_Concert_Visuals "
-target_duration = 180  # Target duration of the condensed video in seconds
-fps = 12  # Frames per second for the output video
-sequence_length = 4  # Number of consecutive frames to include per sequence
-random_factor = 2  # Percentage of randomness to apply to frame selection (0-100), 0 for no randomness
+input_video_path = "/Users/agi/Desktop/EDIT_Hydra.mp4"
+output_dir = "/Users/agi/Desktop/EDIT_Hydra_output"
+target_duration = 8  # Target duration of the condensed video in seconds
+output_fps = 30  # Frames per second for the output video
+grain_size_frames = 3  # Size of each grain in frames
+overlap_frames = 0  # Overlap between grains in frames
+random_factor = 25  # Percentage of randomness to apply to frame selection (0-100), 0 for no randomness
 speed_factor = 1  # Speed factor to apply to the final video (e.g., 2 for 2x speed), 1 for normal speed
 
-condense_video(input_video_path, output_dir, target_duration, fps, sequence_length, random_factor, speed_factor)
+condense_video(input_video_path, output_dir, target_duration, output_fps, grain_size_frames, overlap_frames, random_factor, speed_factor)

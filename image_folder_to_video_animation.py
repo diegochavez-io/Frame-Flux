@@ -29,7 +29,7 @@ def create_video_from_images(input_folder, output_file, video_size=(1920, 1080),
             
             if img is not None:
                 # Calculate scaling factor to fit image within video frame
-                h, w = img.shape[:2]
+                h, w = img.shape[:2]x``
                 scale = min(video_size[0] / w, video_size[1] / h)
                 new_size = (int(w * scale), int(h * scale))
                 

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Video Frame Extractor</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        padding: 20px;
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #1e1e1e;
+        color: #e0e0e0;
+      }
+      form {
+        margin-top: 20px;
+      }
+      input,
+      select {
+        margin-bottom: 10px;
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        background-color: #2d2d2d;
+        color: #e0e0e0;
+        border: 1px solid #444;
+      }
+      input[type="submit"] {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+      }
+      input[type="submit"]:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Video Frame Extractor</h1>
+    <form method="POST" enctype="multipart/form-data">
+      <select name="input_type" id="input_type">
+        <option value="file">Single Video File</option>
+        <option value="folder">Folder of Videos</option>
+      </select>
+
+      <input type="file" name="input" id="input" accept="video/*" multiple />
+
+      <input type="submit" value="Extract Frames" />
+    </form>
+
+    <script>
+      document
+        .getElementById("input_type")
+        .addEventListener("change", function () {
+          var input = document.getElementById("input");
+          if (this.value === "folder") {
+            input.setAttribute("webkitdirectory", "");
+            input.setAttribute("directory", "");
+          } else {
+            input.removeAttribute("webkitdirectory");
+            input.removeAttribute("directory");
+          }
+        });
+    </script>
+  </body>
+</html>

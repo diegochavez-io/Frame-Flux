@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Extracted Frames</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #1e1e1e;
+        color: #e0e0e0;
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+        margin-bottom: 20px;
+        border: 1px solid #444;
+      }
+      a {
+        display: inline-block;
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 15px;
+        text-decoration: none;
+        margin-top: 10px;
+        margin-right: 10px;
+      }
+      a:hover {
+        background-color: #45a049;
+      }
+      .error {
+        color: #ff6b6b;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% else %} {% for frame in frames %}
+    <h2>{{ "First" if loop.index0 % 2 == 0 else "Last" }} Frame</h2>
+    <img
+      src="{{ url_for('static', filename='frames/' + frame) }}"
+      alt="Extracted Frame"
+    />
+    <br />
+    <a href="{{ url_for('download_file', filename=frame) }}">Download Frame</a>
+    <br /><br />
+    {% endfor %} {% endif %}
+    <a href="/">Extract More Frames</a>
+  </body>
+</html>

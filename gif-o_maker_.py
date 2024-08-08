@@ -108,7 +108,7 @@ def video_to_gif(input_video_path, output_gif_path, start_time=None, end_time=No
 
 # Example usage
 video_to_gif(
-    input_video_path="//Users/agi/Dropbox/Runway/Int/snake styleganxl cc_scale__clip_4.mp4",
+    input_video_path="/Users/agi/Dropbox/ComfyUI_Output/2024-07-16/AnimateDiff_89756345785_00023_prob4_ddv3.mp4",
     output_gif_path="/Users/agi/Dropbox/Portfolio/GIF/output_7.gif",
     start_time=0,  # start at 0 seconds
     end_time=5,    # end at 5 seconds
